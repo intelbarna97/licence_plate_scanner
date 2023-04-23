@@ -4,14 +4,15 @@ import pytesseract
 import numpy as np
 from skimage.segmentation import clear_border
 
+
 class PlateDetector:
     def __init__(self, image):
         self.image = image
         pytesseract.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR\\tesseract'
 
     def detect(self):
-        self.image = imutils.resize(
-            self.image, width=1000)  # resize image to 1000
+        #self.image = imutils.resize(
+        #    self.image, width=1000)  # resize image to 1000
         # cv2.imshow('original video', self.image)
         original_image = self.image.copy()
         gray_image = cv2.cvtColor(
@@ -32,14 +33,17 @@ class PlateDetector:
         cv2.imshow("Top contours", original_image)
         for c in cnts:
             perimeter = cv2.arcLength(c, True)
-            approx = cv2.approxPolyDP(c, 0.01 * perimeter, True)  # 0.01
+            approx = cv2.approxPolyDP(c, 0.012 * perimeter, True)  # 0.01
             if len(approx) == 4:
                 x, y, w, h = cv2.boundingRect(c)
                 new_img = self.image[y:y+h, x:x+w]
                 aspect_ratio = float(new_img.shape[1])/float(new_img.shape[0])
-                if aspect_ratio > 4.5 and aspect_ratio < 5.0:
-                    cv2.imshow("possible plate", new_img)
+                if aspect_ratio > 4.1 and aspect_ratio < 5.0:
                     new_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2GRAY)
+                    new_img = cv2.adaptiveThreshold(
+                        new_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+                    new_img = cv2.dilate(new_img, (2, 2), iterations=1)
+                    cv2.imshow("possible plate", new_img)
                     print(pytesseract.image_to_string(new_img, lang='eng'))
 
 
