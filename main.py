@@ -4,31 +4,26 @@ import pytesseract
 import numpy as np
 from skimage.segmentation import clear_border
 
-
-# Cropped_loc = './1.png'
-# plate = pytesseract.image_to_string(Cropped_loc, lang='eng')
-# print("Number plate is:", plate)
-# print(plate)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-
 class PlateDetector:
     def __init__(self, image):
         self.image = image
         pytesseract.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR\\tesseract'
 
     def detect(self):
-        self.image = imutils.resize(self.image, width=1000)  # resize image to 1000
+        self.image = imutils.resize(
+            self.image, width=1000)  # resize image to 1000
         # cv2.imshow('original video', self.image)
         original_image = self.image.copy()
         gray_image = cv2.cvtColor(
             self.image, cv2.COLOR_BGR2GRAY)  # convert to gray
-        gray_image = cv2.bilateralFilter(gray_image, 3, 6, 6)  # smoothen image 3 6 6
-        gray_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        
+        gray_image = cv2.bilateralFilter(
+            gray_image, 3, 6, 6)  # smoothen image 3 6 6
+        gray_image = cv2.adaptiveThreshold(
+            gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+
         cv2.imshow('gray', gray_image)
-        #edged = cv2.Canny(gray_image, 30, 200)  # edge detection
-        #cv2.imshow('edged', edged)
+        # edged = cv2.Canny(gray_image, 30, 200)  # edge detection
+        # cv2.imshow('edged', edged)
         cnts, _ = cv2.findContours(  # find contours
             gray_image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[
@@ -37,7 +32,7 @@ class PlateDetector:
         cv2.imshow("Top contours", original_image)
         for c in cnts:
             perimeter = cv2.arcLength(c, True)
-            approx = cv2.approxPolyDP(c, 0.01 * perimeter, True) #0.01
+            approx = cv2.approxPolyDP(c, 0.01 * perimeter, True)  # 0.01
             if len(approx) == 4:
                 x, y, w, h = cv2.boundingRect(c)
                 new_img = self.image[y:y+h, x:x+w]
